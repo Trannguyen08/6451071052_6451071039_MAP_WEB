@@ -27,9 +27,9 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
   @override
   Widget build(BuildContext context) {
     return AdminLayout(
-      title: 'Quan ly san pham',
-      searchHint: 'Tim ten san pham...',
-      createLabel: 'Them san pham',
+      title: 'Quản lý sản phẩm',
+      searchHint: 'Tìm tên sản phẩm...',
+      createLabel: 'Thêm sản phẩm',
       onSearch: controller.searchProducts,
       onCreate: () => _showProductDialog(),
       content: Column(
@@ -54,7 +54,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                   if (controller.products.isEmpty)
                     const Padding(
                       padding: EdgeInsets.all(32),
-                      child: Text('Chua co san pham'),
+                      child: Text('Chưa có sản phẩm'),
                     )
                   else
                     ...controller.products.map(_buildRow),
@@ -76,13 +76,13 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
           child: DropdownButtonFormField<String>(
             initialValue: controller.selectedCategoryId.value,
             decoration: const InputDecoration(
-              labelText: 'Loc danh muc',
+              labelText: 'Lọc danh mục',
               border: OutlineInputBorder(),
             ),
             items: [
               const DropdownMenuItem(
                 value: 'all',
-                child: Text('Tat ca danh muc'),
+                child: Text('Tất cả danh mục'),
               ),
               ...controller.categories.map(
                 (category) => DropdownMenuItem(
@@ -112,11 +112,13 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
       ),
       child: const Row(
         children: [
-          Expanded(flex: 3, child: Text('San pham', style: _headerStyle)),
-          Expanded(flex: 3, child: Text('Mo ta', style: _headerStyle)),
-          Expanded(flex: 2, child: Text('Danh muc', style: _headerStyle)),
-          Expanded(flex: 2, child: Text('Gia', style: _headerStyle)),
-          Expanded(flex: 1, child: Text('Tac vu', style: _headerStyle)),
+          Expanded(flex: 3, child: Text('Sản phẩm', style: _headerStyle)),
+          Expanded(flex: 3, child: Text('Mô tả', style: _headerStyle)),
+          Expanded(flex: 2, child: Text('Nhãn hàng', style: _headerStyle)),
+          Expanded(flex: 2, child: Text('Danh mục', style: _headerStyle)),
+          Expanded(flex: 2, child: Text('Giá', style: _headerStyle)),
+          Expanded(flex: 2, child: Text('Trạng thái', style: _headerStyle)),
+          Expanded(flex: 1, child: Text('Tác vụ', style: _headerStyle)),
         ],
       ),
     );
@@ -174,6 +176,13 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
           ),
           Expanded(
             flex: 2,
+            child: Text(
+              product.brand.isEmpty ? 'Chưa có' : product.brand,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          Expanded(
+            flex: 2,
             child: Text(controller.categoryName(product.categoryId)),
           ),
           Expanded(
@@ -184,6 +193,16 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
             ),
           ),
           Expanded(
+            flex: 2,
+            child: Text(
+              product.isAvailable ? 'Đang bán' : 'Tạm ẩn',
+              style: TextStyle(
+                color: product.isAvailable ? Colors.green : Colors.red,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          Expanded(
             flex: 1,
             child: PopupMenuButton<String>(
               onSelected: (value) {
@@ -191,8 +210,8 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                 if (value == 'delete') _confirmDelete(product);
               },
               itemBuilder: (context) => const [
-                PopupMenuItem(value: 'edit', child: Text('Sua')),
-                PopupMenuItem(value: 'delete', child: Text('Xoa')),
+                PopupMenuItem(value: 'edit', child: Text('Sửa')),
+                PopupMenuItem(value: 'delete', child: Text('Xóa')),
               ],
             ),
           ),
@@ -212,6 +231,8 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
     final imageController = TextEditingController(
       text: product?.imageUrl ?? '',
     );
+    final brandController = TextEditingController(text: product?.brand ?? '');
+    final isAvailable = (product?.isAvailable ?? true).obs;
     final selectedCategory =
         (product?.categoryId ??
                 (controller.categories.isNotEmpty
@@ -222,7 +243,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
 
     Get.dialog(
       AlertDialog(
-        title: Text(product == null ? 'Them san pham' : 'Sua san pham'),
+        title: Text(product == null ? 'Thêm sản phẩm' : 'Sửa sản phẩm'),
         content: SizedBox(
           width: 520,
           child: Form(
@@ -230,17 +251,28 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _field(nameController, 'Ten san pham'),
+                _field(nameController, 'Tên sản phẩm'),
                 const SizedBox(height: 12),
-                _field(descriptionController, 'Mo ta', maxLines: 2),
+                _field(descriptionController, 'Mô tả', maxLines: 2),
                 const SizedBox(height: 12),
                 _field(
                   priceController,
-                  'Gia',
+                  'Giá',
                   keyboardType: TextInputType.number,
                 ),
                 const SizedBox(height: 12),
                 _field(imageController, 'Image URL', required: false),
+                const SizedBox(height: 12),
+                _field(brandController, 'Nhãn hàng', required: false),
+                const SizedBox(height: 12),
+                Obx(
+                  () => SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Đang bán'),
+                    value: isAvailable.value,
+                    onChanged: (value) => isAvailable.value = value,
+                  ),
+                ),
                 const SizedBox(height: 12),
                 Obx(
                   () => DropdownButtonFormField<String>(
@@ -248,7 +280,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                         ? null
                         : selectedCategory.value,
                     decoration: const InputDecoration(
-                      labelText: 'Danh muc',
+                      labelText: 'Danh mục',
                       border: OutlineInputBorder(),
                     ),
                     items: controller.categories
@@ -260,7 +292,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                         )
                         .toList(),
                     validator: (value) =>
-                        value == null || value.isEmpty ? 'Chon danh muc' : null,
+                        value == null || value.isEmpty ? 'Chọn danh mục' : null,
                     onChanged: (value) {
                       if (value != null) selectedCategory.value = value;
                     },
@@ -271,7 +303,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
           ),
         ),
         actions: [
-          TextButton(onPressed: Get.back, child: const Text('Huy')),
+          TextButton(onPressed: Get.back, child: const Text('Hủy')),
           Obx(
             () => ElevatedButton(
               onPressed: controller.isSaving.value
@@ -285,6 +317,8 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                         price: priceController.text,
                         imageUrl: imageController.text,
                         categoryId: selectedCategory.value,
+                        brand: brandController.text,
+                        isAvailable: isAvailable.value,
                       );
                     },
               child: controller.isSaving.value
@@ -293,7 +327,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                       height: 18,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('Luu'),
+                  : const Text('Lưu'),
             ),
           ),
         ],
@@ -303,6 +337,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
       descriptionController.dispose();
       priceController.dispose();
       imageController.dispose();
+      brandController.dispose();
     });
   }
 
@@ -322,7 +357,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
         border: const OutlineInputBorder(),
       ),
       validator: required
-          ? (value) => value == null || value.trim().isEmpty ? 'Bat buoc' : null
+          ? (value) => value == null || value.trim().isEmpty ? 'Bắt buộc' : null
           : null,
     );
   }
@@ -330,16 +365,16 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
   void _confirmDelete(ProductModel product) {
     Get.dialog(
       AlertDialog(
-        title: const Text('Xoa san pham'),
-        content: Text('Ban co chac muon xoa ${product.name}?'),
+        title: const Text('Xóa sản phẩm'),
+        content: Text('Bạn có chắc muốn xóa ${product.name}?'),
         actions: [
-          TextButton(onPressed: Get.back, child: const Text('Huy')),
+          TextButton(onPressed: Get.back, child: const Text('Hủy')),
           ElevatedButton(
             onPressed: () {
               Get.back();
               controller.deleteProduct(product.id);
             },
-            child: const Text('Xoa'),
+            child: const Text('Xóa'),
           ),
         ],
       ),

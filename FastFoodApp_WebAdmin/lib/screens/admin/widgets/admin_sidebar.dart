@@ -30,29 +30,31 @@ class AdminSidebar extends StatelessWidget {
           const SizedBox(height: 32),
           _buildUserInfo(),
           const SizedBox(height: 32),
-          _buildMenuItem(Icons.dashboard_outlined, 'Dashboard'),
+          _buildMenuItem(
+            Icons.dashboard_outlined,
+            'Dashboard',
+            route: AppRoutes.adminDashboard,
+          ),
           _buildMenuItem(
             Icons.shopping_bag_outlined,
-            'Orders',
+            'Đơn hàng',
             route: AppRoutes.adminOrders,
           ),
           _buildMenuItem(
             Icons.category_outlined,
-            'Categories',
+            'Danh mục',
             route: AppRoutes.adminCategories,
           ),
           _buildMenuItem(
             Icons.restaurant_menu_outlined,
-            'Products',
+            'Sản phẩm',
             route: AppRoutes.adminProducts,
           ),
           _buildMenuItem(
             Icons.people_outline,
-            'Customers',
+            'Khách hàng',
             route: AppRoutes.adminUsers,
           ),
-          _buildMenuItem(Icons.bar_chart_outlined, 'Analytics'),
-          _buildMenuItem(Icons.settings_outlined, 'Settings'),
           const Spacer(),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 24),
@@ -96,7 +98,7 @@ class AdminSidebar extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'Manage your kitchen',
+                  'Quản lý cửa hàng',
                   style: TextStyle(color: Colors.grey[600], fontSize: 12),
                 ),
               ],

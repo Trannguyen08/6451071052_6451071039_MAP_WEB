@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
 import '../models/admin_order_model.dart';
+import '../models/admin_dashboard_model.dart';
 import '../models/admin_user_model.dart';
 import '../models/category_model.dart';
 import '../models/product_model.dart';
@@ -44,7 +45,7 @@ class AdminService extends GetConnect {
     if (response.status.hasError) {
       throw response.body?['error'] ??
           response.statusText ??
-          'Loi dang nhap admin';
+          'Lỗi đăng nhập admin';
     }
 
     final session = AdminSession.fromJson(response.body);
@@ -72,9 +73,22 @@ class AdminService extends GetConnect {
     if (response.status.hasError) {
       throw response.body?['error'] ??
           response.statusText ??
-          'Loi tai danh sach nguoi dung';
+          'Lỗi tải danh sách người dùng';
     }
     return AdminDashboardData.fromJson(response.body);
+  }
+
+  Future<AdminDashboardOverview> getDashboardOverview() async {
+    final response = await get(
+      '$baseUrlStr/admin/dashboard',
+      headers: _authHeaders,
+    );
+    if (response.status.hasError) {
+      throw response.body?['error'] ??
+          response.statusText ??
+          'Lỗi tải dashboard admin';
+    }
+    return AdminDashboardOverview.fromJson(response.body);
   }
 
   Future<bool> createUser(Map<String, dynamic> data) async {
@@ -86,7 +100,7 @@ class AdminService extends GetConnect {
     if (response.status.hasError) {
       throw response.body?['error'] ??
           response.statusText ??
-          'Loi tao khach hang';
+          'Lỗi tạo khách hàng';
     }
     return response.body['success'] == true;
   }
@@ -100,7 +114,7 @@ class AdminService extends GetConnect {
     if (response.status.hasError) {
       throw response.body?['error'] ??
           response.statusText ??
-          'Loi cap nhat khach hang';
+          'Lỗi cập nhật khách hàng';
     }
     return response.body['success'] == true;
   }
@@ -113,7 +127,7 @@ class AdminService extends GetConnect {
     if (response.status.hasError) {
       throw response.body?['error'] ??
           response.statusText ??
-          'Loi xoa khach hang';
+          'Lỗi xóa khách hàng';
     }
     return response.body['success'] == true;
   }
@@ -125,7 +139,7 @@ class AdminService extends GetConnect {
     if (response.status.hasError) {
       throw response.body?['error'] ??
           response.statusText ??
-          'Loi cap nhat trang thai';
+          'Lỗi cập nhật trạng thái';
     }
     return response.body['success'] == true;
   }
@@ -142,19 +156,22 @@ class AdminService extends GetConnect {
     if (response.status.hasError) {
       throw response.body?['error'] ??
           response.statusText ??
-          'Loi tai danh sach don hang';
+          'Lỗi tải danh sách đơn hàng';
     }
     return AdminOrdersData.fromJson(response.body);
   }
 
   Future<bool> updateOrderStatus(String orderId, String status) async {
-    final response = await patch('$baseUrlStr/admin/orders/$orderId/status', {
-      'status': status,
-    }, headers: _authHeaders);
+    final response = await patch(
+      '$baseUrlStr/admin/orders/$orderId/status',
+      {'status': status},
+      query: {'status': status},
+      headers: {..._authHeaders, 'Content-Type': 'application/json'},
+    );
     if (response.status.hasError) {
       throw response.body?['error'] ??
           response.statusText ??
-          'Loi cap nhat don hang';
+          'Lỗi cập nhật đơn hàng';
     }
     return response.body['success'] == true;
   }
@@ -168,7 +185,7 @@ class AdminService extends GetConnect {
     if (response.status.hasError) {
       throw response.body?['error'] ??
           response.statusText ??
-          'Loi tai danh muc';
+          'Lỗi tải danh mục';
     }
     return (response.body['categories'] as List<dynamic>? ?? [])
         .map(
@@ -186,7 +203,7 @@ class AdminService extends GetConnect {
     if (response.status.hasError) {
       throw response.body?['error'] ??
           response.statusText ??
-          'Loi tao danh muc';
+          'Lỗi tạo danh mục';
     }
     return response.body['success'] == true;
   }
@@ -203,7 +220,7 @@ class AdminService extends GetConnect {
     if (response.status.hasError) {
       throw response.body?['error'] ??
           response.statusText ??
-          'Loi cap nhat danh muc';
+          'Lỗi cập nhật danh mục';
     }
     return response.body['success'] == true;
   }
@@ -216,7 +233,7 @@ class AdminService extends GetConnect {
     if (response.status.hasError) {
       throw response.body?['error'] ??
           response.statusText ??
-          'Loi xoa danh muc';
+          'Lỗi xóa danh mục';
     }
     return response.body['success'] == true;
   }
@@ -233,7 +250,7 @@ class AdminService extends GetConnect {
     if (response.status.hasError) {
       throw response.body?['error'] ??
           response.statusText ??
-          'Loi tai san pham';
+          'Lỗi tải sản phẩm';
     }
     return (response.body['products'] as List<dynamic>? ?? [])
         .map((product) => ProductModel.fromJson(product))
@@ -249,7 +266,7 @@ class AdminService extends GetConnect {
     if (response.status.hasError) {
       throw response.body?['error'] ??
           response.statusText ??
-          'Loi tao san pham';
+          'Lỗi tạo sản phẩm';
     }
     return response.body['success'] == true;
   }
@@ -266,7 +283,7 @@ class AdminService extends GetConnect {
     if (response.status.hasError) {
       throw response.body?['error'] ??
           response.statusText ??
-          'Loi cap nhat san pham';
+          'Lỗi cập nhật sản phẩm';
     }
     return response.body['success'] == true;
   }
@@ -279,7 +296,7 @@ class AdminService extends GetConnect {
     if (response.status.hasError) {
       throw response.body?['error'] ??
           response.statusText ??
-          'Loi xoa san pham';
+          'Lỗi xóa sản phẩm';
     }
     return response.body['success'] == true;
   }

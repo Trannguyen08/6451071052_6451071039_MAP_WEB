@@ -27,9 +27,9 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
   @override
   Widget build(BuildContext context) {
     return AdminLayout(
-      title: 'Quan ly danh muc',
-      searchHint: 'Tim ten danh muc...',
-      createLabel: 'Them danh muc',
+      title: 'Quản lý danh mục',
+      searchHint: 'Tìm tên danh mục...',
+      createLabel: 'Thêm danh mục',
       onSearch: controller.searchCategories,
       onCreate: () => _showCategoryDialog(),
       content: Obx(() {
@@ -49,7 +49,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
               if (controller.categories.isEmpty)
                 const Padding(
                   padding: EdgeInsets.all(32),
-                  child: Text('Chua co danh muc'),
+                  child: Text('Chưa có danh mục'),
                 )
               else
                 ...controller.categories.map(_buildRow),
@@ -72,10 +72,9 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
       ),
       child: const Row(
         children: [
-          Expanded(flex: 1, child: Text('Icon', style: _headerStyle)),
-          Expanded(flex: 4, child: Text('Ten danh muc', style: _headerStyle)),
+          Expanded(flex: 5, child: Text('Tên danh mục', style: _headerStyle)),
           Expanded(flex: 4, child: Text('ID Firebase', style: _headerStyle)),
-          Expanded(flex: 1, child: Text('Tac vu', style: _headerStyle)),
+          Expanded(flex: 1, child: Text('Tác vụ', style: _headerStyle)),
         ],
       ),
     );
@@ -90,11 +89,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
       child: Row(
         children: [
           Expanded(
-            flex: 1,
-            child: Text(category.icon, style: const TextStyle(fontSize: 28)),
-          ),
-          Expanded(
-            flex: 4,
+            flex: 5,
             child: Text(
               category.name,
               style: const TextStyle(fontWeight: FontWeight.bold),
@@ -115,8 +110,8 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                 if (value == 'delete') _confirmDelete(category);
               },
               itemBuilder: (context) => const [
-                PopupMenuItem(value: 'edit', child: Text('Sua')),
-                PopupMenuItem(value: 'delete', child: Text('Xoa')),
+                PopupMenuItem(value: 'edit', child: Text('Sửa')),
+                PopupMenuItem(value: 'delete', child: Text('Xóa')),
               ],
             ),
           ),
@@ -127,12 +122,11 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
 
   void _showCategoryDialog({CategoryModel? category}) {
     final nameController = TextEditingController(text: category?.name ?? '');
-    final iconController = TextEditingController(text: category?.icon ?? '🍔');
     final formKey = GlobalKey<FormState>();
 
     Get.dialog(
       AlertDialog(
-        title: Text(category == null ? 'Them danh muc' : 'Sua danh muc'),
+        title: Text(category == null ? 'Thêm danh mục' : 'Sửa danh mục'),
         content: SizedBox(
           width: 380,
           child: Form(
@@ -143,26 +137,18 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                 TextFormField(
                   controller: nameController,
                   decoration: const InputDecoration(
-                    labelText: 'Ten danh muc',
+                    labelText: 'Tên danh mục',
                     border: OutlineInputBorder(),
                   ),
                   validator: (value) =>
-                      value == null || value.trim().isEmpty ? 'Bat buoc' : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: iconController,
-                  decoration: const InputDecoration(
-                    labelText: 'Icon',
-                    border: OutlineInputBorder(),
-                  ),
+                      value == null || value.trim().isEmpty ? 'Bắt buộc' : null,
                 ),
               ],
             ),
           ),
         ),
         actions: [
-          TextButton(onPressed: Get.back, child: const Text('Huy')),
+          TextButton(onPressed: Get.back, child: const Text('Hủy')),
           Obx(
             () => ElevatedButton(
               onPressed: controller.isSaving.value
@@ -172,7 +158,6 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                       controller.saveCategory(
                         currentCategory: category,
                         name: nameController.text,
-                        icon: iconController.text,
                       );
                     },
               child: controller.isSaving.value
@@ -181,30 +166,29 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                       height: 18,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('Luu'),
+                  : const Text('Lưu'),
             ),
           ),
         ],
       ),
     ).whenComplete(() {
       nameController.dispose();
-      iconController.dispose();
     });
   }
 
   void _confirmDelete(CategoryModel category) {
     Get.dialog(
       AlertDialog(
-        title: const Text('Xoa danh muc'),
-        content: Text('Ban co chac muon xoa ${category.name}?'),
+        title: const Text('Xóa danh mục'),
+        content: Text('Bạn có chắc muốn xóa ${category.name}?'),
         actions: [
-          TextButton(onPressed: Get.back, child: const Text('Huy')),
+          TextButton(onPressed: Get.back, child: const Text('Hủy')),
           ElevatedButton(
             onPressed: () {
               Get.back();
               controller.deleteCategory(category.id);
             },
-            child: const Text('Xoa'),
+            child: const Text('Xóa'),
           ),
         ],
       ),

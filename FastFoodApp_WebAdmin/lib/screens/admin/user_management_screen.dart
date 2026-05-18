@@ -34,7 +34,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   @override
   Widget build(BuildContext context) {
     return AdminLayout(
-      title: 'Quan ly khach hang',
+      title: 'Quản lý khách hàng',
       onSearch: controller.onSearch,
       onCreate: () => _showCustomerDialog(context),
       content: Obx(() {
@@ -49,14 +49,14 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
 
         final data = controller.dashboardData.value;
         if (data == null) {
-          return const Center(child: Text('Khong co du lieu'));
+          return const Center(child: Text('Không có dữ liệu'));
         }
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Xem danh sach va quan ly tai khoan khach hang.',
+              'Xem danh sách và quản lý tài khoản khách hàng.',
               style: TextStyle(color: Colors.grey, fontSize: 16),
             ),
             const SizedBox(height: 32),
@@ -64,7 +64,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               children: [
                 Expanded(
                   child: StatCard(
-                    title: 'TONG KHACH HANG',
+                    title: 'TỔNG KHÁCH HÀNG',
                     value: data.total.toString(),
                     percentage: '+12%',
                     icon: Icons.people_alt_outlined,
@@ -74,7 +74,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 const SizedBox(width: 24),
                 Expanded(
                   child: StatCard(
-                    title: 'HOAT DONG',
+                    title: 'HOẠT ĐỘNG',
                     value: data.active.toString(),
                     percentage:
                         '${data.total == 0 ? 0 : (data.active / data.total * 100).round()}%',
@@ -85,7 +85,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 const SizedBox(width: 24),
                 Expanded(
                   child: StatCard(
-                    title: 'BI KHOA',
+                    title: 'BỊ KHÓA',
                     value: data.blocked.toString(),
                     percentage:
                         '${data.total == 0 ? 0 : (data.blocked / data.total * 100).round()}%',
@@ -96,7 +96,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 const SizedBox(width: 24),
                 Expanded(
                   child: StatCard(
-                    title: 'CHI TIEU TB',
+                    title: 'CHI TIÊU TB',
                     value: '${data.avgSpending.toInt()}d',
                     percentage: '+5.4%',
                     icon: Icons.account_balance_wallet_outlined,
@@ -125,7 +125,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
 
     Get.dialog(
       AlertDialog(
-        title: Text(user == null ? 'Them khach hang' : 'Sua khach hang'),
+        title: Text(user == null ? 'Thêm khách hàng' : 'Sửa khách hàng'),
         content: SizedBox(
           width: 420,
           child: Form(
@@ -133,11 +133,11 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _dialogField(nameController, 'Ho ten'),
+                _dialogField(nameController, 'Họ tên'),
                 const SizedBox(height: 12),
                 _dialogField(emailController, 'Email'),
                 const SizedBox(height: 12),
-                _dialogField(phoneController, 'So dien thoai'),
+                _dialogField(phoneController, 'Số điện thoại'),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: avatarController,
@@ -151,17 +151,17 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                   () => DropdownButtonFormField<String>(
                     initialValue: status.value,
                     decoration: const InputDecoration(
-                      labelText: 'Trang thai',
+                      labelText: 'Trạng thái',
                       border: OutlineInputBorder(),
                     ),
                     items: const [
                       DropdownMenuItem(
                         value: 'active',
-                        child: Text('Hoat dong'),
+                        child: Text('Hoạt động'),
                       ),
                       DropdownMenuItem(
                         value: 'blocked',
-                        child: Text('Bi khoa'),
+                        child: Text('Bị khóa'),
                       ),
                     ],
                     onChanged: (value) {
@@ -174,7 +174,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           ),
         ),
         actions: [
-          TextButton(onPressed: Get.back, child: const Text('Huy')),
+          TextButton(onPressed: Get.back, child: const Text('Hủy')),
           Obx(
             () => ElevatedButton(
               onPressed: controller.isSaving.value
@@ -196,7 +196,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                       height: 18,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('Luu'),
+                  : const Text('Lưu'),
             ),
           ),
         ],
@@ -217,7 +217,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
         border: const OutlineInputBorder(),
       ),
       validator: (value) =>
-          value == null || value.trim().isEmpty ? 'Bat buoc' : null,
+          value == null || value.trim().isEmpty ? 'Bắt buộc' : null,
     );
   }
 }

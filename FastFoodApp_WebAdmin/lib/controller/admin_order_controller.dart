@@ -62,13 +62,34 @@ class AdminOrderController extends GetxController {
   }
 
   Future<void> updateStatus(AdminOrder order, String status) async {
+    final normalizedStatus = _normalizeStatus(status);
+    if (order.status == normalizedStatus ||
+        !statusOptions.contains(normalizedStatus) ||
+        normalizedStatus == 'all') {
+      return;
+    }
+
     try {
-      final success = await _adminService.updateOrderStatus(order.id, status);
+      final success = await _adminService.updateOrderStatus(
+        order.id,
+        normalizedStatus,
+      );
       if (success) {
         await fetchOrders();
       }
     } catch (e) {
-      Get.snackbar('Error', e.toString());
+      Get.snackbar('Lỗi', e.toString());
+    }
+  }
+
+  String _normalizeStatus(String status) {
+    switch (status.trim().toLowerCase()) {
+      case 'delivere':
+        return 'delivered';
+      case 'complete':
+        return 'completed';
+      default:
+        return status.trim().toLowerCase();
     }
   }
 }

@@ -54,14 +54,21 @@ class AdminCatalogController extends GetxController {
   Future<void> saveCategory({
     CategoryModel? currentCategory,
     required String name,
-    required String icon,
   }) async {
+    final normalizedName = _normalizeName(name);
+    final duplicated = categories.any(
+      (category) =>
+          category.id != currentCategory?.id &&
+          _normalizeName(category.name) == normalizedName,
+    );
+    if (duplicated) {
+      Get.snackbar('Lỗi', 'Tên danh mục đã tồn tại');
+      return;
+    }
+
     try {
       isSaving.value = true;
-      final data = {
-        'name': name.trim(),
-        'icon': icon.trim().isEmpty ? '🍔' : icon.trim(),
-      };
+      final data = {'name': name.trim()};
       final success = currentCategory == null
           ? await _adminService.createCategory(data)
           : await _adminService.updateCategory(currentCategory.id, data);
@@ -98,7 +105,20 @@ class AdminCatalogController extends GetxController {
     required String price,
     required String imageUrl,
     required String categoryId,
+    required String brand,
+    required bool isAvailable,
   }) async {
+    final normalizedName = _normalizeName(name);
+    final duplicated = products.any(
+      (product) =>
+          product.id != currentProduct?.id &&
+          _normalizeName(product.name) == normalizedName,
+    );
+    if (duplicated) {
+      Get.snackbar('Lỗi', 'Tên sản phẩm đã tồn tại');
+      return;
+    }
+
     try {
       isSaving.value = true;
       final data = {
@@ -107,6 +127,8 @@ class AdminCatalogController extends GetxController {
         'price': double.tryParse(price.trim()) ?? 0,
         'imageUrl': imageUrl.trim(),
         'categoryId': categoryId,
+        'brand': brand.trim(),
+        'isAvailable': isAvailable,
       };
       final success = currentProduct == null
           ? await _adminService.createProduct(data)
@@ -157,6 +179,20 @@ class AdminCatalogController extends GetxController {
         categoryId;
   }
 
+  String _normalizeName(String value) {
+    const accents =
+        'àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ';
+    const plain =
+        'aaaaaaaaaaaaaaaaaeeeeeeeeeeeiiiiioooooooooooooooooouuuuuuuuuuuyyyyyd';
+    final buffer = StringBuffer();
+    for (final rune in value.trim().toLowerCase().runes) {
+      final char = String.fromCharCode(rune);
+      final index = accents.indexOf(char);
+      buffer.write(index >= 0 ? plain[index] : char);
+    }
+    return buffer.toString().replaceAll(RegExp(r'\s+'), ' ');
+  }
+
   bool _ensureLogin() {
     if (_adminService.isLoggedIn) return true;
     Get.offAllNamed(AppRoutes.adminLogin);
@@ -168,6 +204,6 @@ class AdminCatalogController extends GetxController {
       Get.offAllNamed(AppRoutes.adminLogin);
       return;
     }
-    Get.snackbar('Error', error.toString());
+    Get.snackbar('Lỗi', error.toString());
   }
 }

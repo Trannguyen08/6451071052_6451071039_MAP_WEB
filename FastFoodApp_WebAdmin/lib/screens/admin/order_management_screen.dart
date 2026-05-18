@@ -27,8 +27,8 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
   @override
   Widget build(BuildContext context) {
     return AdminLayout(
-      title: 'Quan ly don hang',
-      searchHint: 'Tim ma don, khach hang, sdt...',
+      title: 'Quản lý đơn hàng',
+      searchHint: 'Tìm mã đơn, khách hàng, SĐT...',
       createLabel: null,
       onSearch: controller.onSearch,
       content: Obx(() {
@@ -38,14 +38,14 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
 
         final data = controller.ordersData.value;
         if (data == null) {
-          return const Center(child: Text('Khong co du lieu don hang'));
+          return const Center(child: Text('Không có dữ liệu đơn hàng'));
         }
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Theo doi don hang va cap nhat trang thai tu du lieu Firebase.',
+              'Theo dõi đơn hàng và cập nhật trạng thái từ dữ liệu Firebase.',
               style: TextStyle(color: Colors.grey, fontSize: 16),
             ),
             const SizedBox(height: 32),
@@ -53,9 +53,9 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
               children: [
                 Expanded(
                   child: StatCard(
-                    title: 'TONG DON',
+                    title: 'TỔNG ĐƠN',
                     value: data.total.toString(),
-                    percentage: '${data.pending} cho xu ly',
+                    percentage: '${data.pending} chờ xử lý',
                     icon: Icons.receipt_long_outlined,
                     iconColor: Colors.orange,
                   ),
@@ -63,7 +63,7 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
                 const SizedBox(width: 24),
                 Expanded(
                   child: StatCard(
-                    title: 'DANG XU LY',
+                    title: 'ĐANG XỬ LÝ',
                     value: data.processing.toString(),
                     percentage: 'processing',
                     icon: Icons.local_shipping_outlined,
@@ -73,7 +73,7 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
                 const SizedBox(width: 24),
                 Expanded(
                   child: StatCard(
-                    title: 'HOAN TAT',
+                    title: 'HOÀN TẤT',
                     value: data.completed.toString(),
                     percentage: 'delivered',
                     icon: Icons.check_circle_outline,
@@ -85,7 +85,7 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
                   child: StatCard(
                     title: 'DOANH THU',
                     value: '${data.totalRevenue.toInt()}d',
-                    percentage: '${data.cancelled} da huy',
+                    percentage: '${data.cancelled} đã hủy',
                     icon: Icons.payments_outlined,
                     iconColor: Colors.purple,
                   ),
@@ -111,7 +111,7 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
           () => DropdownButtonFormField<String>(
             initialValue: controller.selectedStatus.value,
             decoration: const InputDecoration(
-              labelText: 'Loc trang thai',
+              labelText: 'Lọc trạng thái',
               border: OutlineInputBorder(),
             ),
             items: controller.statusOptions
@@ -153,7 +153,7 @@ class _OrdersTable extends StatelessWidget {
             if (orders.isEmpty) {
               return const Padding(
                 padding: EdgeInsets.all(32),
-                child: Text('Khong tim thay don hang'),
+                child: Text('Không tìm thấy đơn hàng'),
               );
             }
 
@@ -182,12 +182,12 @@ class _OrdersTable extends StatelessWidget {
       ),
       child: const Row(
         children: [
-          Expanded(flex: 2, child: Text('Don hang', style: _headerStyle)),
-          Expanded(flex: 3, child: Text('Khach hang', style: _headerStyle)),
-          Expanded(flex: 1, child: Text('Mon', style: _headerStyle)),
-          Expanded(flex: 2, child: Text('Tong tien', style: _headerStyle)),
-          Expanded(flex: 2, child: Text('Ngay tao', style: _headerStyle)),
-          Expanded(flex: 2, child: Text('Trang thai', style: _headerStyle)),
+          Expanded(flex: 2, child: Text('Đơn hàng', style: _headerStyle)),
+          Expanded(flex: 3, child: Text('Khách hàng', style: _headerStyle)),
+          Expanded(flex: 1, child: Text('Món', style: _headerStyle)),
+          Expanded(flex: 2, child: Text('Tổng tiền', style: _headerStyle)),
+          Expanded(flex: 2, child: Text('Ngày tạo', style: _headerStyle)),
+          Expanded(flex: 2, child: Text('Trạng thái', style: _headerStyle)),
         ],
       ),
     );
@@ -280,19 +280,19 @@ class _OrdersTable extends StatelessWidget {
 String _statusLabel(String status) {
   switch (status) {
     case 'all':
-      return 'Tat ca';
+      return 'Tất cả';
     case 'pending':
-      return 'Cho xu ly';
+      return 'Chờ xử lý';
     case 'pending_payment':
-      return 'Cho thanh toan';
+      return 'Chờ thanh toán';
     case 'processing':
-      return 'Dang xu ly';
+      return 'Đang xử lý';
     case 'delivered':
-      return 'Da giao';
+      return 'Đã giao';
     case 'completed':
-      return 'Hoan tat';
+      return 'Hoàn tất';
     case 'cancelled':
-      return 'Da huy';
+      return 'Đã hủy';
     default:
       return status;
   }

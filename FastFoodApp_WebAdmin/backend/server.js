@@ -111,6 +111,7 @@ const normalizeProduct = (doc) => {
     price: Number(data.price || 0),
     imageUrl: data.imageUrl || '',
     categoryId: data.categoryId || '',
+    brand: data.brand || data.brandName || '',
     isAvailable: data.isAvailable !== false
   };
 };
@@ -129,6 +130,14 @@ const normalizeUser = (doc, stats = {}) => {
     status: data.status || (data.isBlocked ? 'blocked' : 'active')
   };
 };
+
+const normalizeNameKey = value =>
+  String(value || '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase('vi-VN');
 
 const getUserOrderStats = async () => {
   const stats = new Map();
@@ -302,6 +311,39 @@ app.get('/api/admin/me', requireAdmin, (req, res) => {
   res.json({ admin: req.admin });
 });
 
+app.get('/api/admin/dashboard', requireAdmin, async (req, res) => {
+  if (!requireFirestore(res)) return;
+
+  try {
+    const [usersSnapshot, ordersSnapshot, categoriesSnapshot, productsSnapshot] = await Promise.all([
+      firestore.collection('users').get(),
+      firestore.collection('orders').orderBy('createdAt', 'desc').limit(100).get(),
+      firestore.collection('categories').get(),
+      firestore.collection('products').get()
+    ]);
+
+    const users = usersSnapshot.docs.map(doc => normalizeUser(doc));
+    const orders = ordersSnapshot.docs.map(normalizeOrder);
+
+    res.json({
+      totalUsers: users.length,
+      activeUsers: users.filter(user => user.status === 'active').length,
+      totalOrders: orders.length,
+      pendingOrders: orders.filter(order => order.status === 'pending' || order.status === 'pending_payment').length,
+      processingOrders: orders.filter(order => order.status === 'processing').length,
+      completedOrders: orders.filter(order => order.status === 'delivered' || order.status === 'completed').length,
+      cancelledOrders: orders.filter(order => order.status === 'cancelled').length,
+      totalCategories: categoriesSnapshot.size,
+      totalProducts: productsSnapshot.size,
+      totalRevenue: orders.reduce((sum, order) => sum + order.totalAmount, 0),
+      recentOrders: orders.slice(0, 5)
+    });
+  } catch (error) {
+    console.error('Admin dashboard Firestore error:', error);
+    res.status(500).json({ error: 'Khong the tai dashboard admin' });
+  }
+});
+
 app.get('/api/admin/users', requireAdmin, async (req, res) => {
   if (!requireFirestore(res)) return;
 
@@ -397,11 +439,35 @@ app.patch('/api/admin/orders/:id/status', requireAdmin, async (req, res) => {
   if (!requireFirestore(res)) return;
 
   const { id } = req.params;
-  const { status } = req.body;
+  const statusAliases = {
+    delivere: 'delivered',
+    complete: 'completed',
+  };
   const allowedStatuses = ['pending', 'pending_payment', 'processing', 'delivered', 'completed', 'cancelled'];
+  const normalizeStatus = value => {
+    const raw = String(value || '').trim().toLowerCase();
+    if (statusAliases[raw]) return statusAliases[raw];
+    if (raw.startsWith('deliver')) return 'delivered';
+    if (raw.startsWith('complet')) return 'completed';
+    if (raw.startsWith('process')) return 'processing';
+    if (raw.startsWith('cancel')) return 'cancelled';
+    if (raw === 'pendingpayment' || raw === 'pending-payment') return 'pending_payment';
+    return raw;
+  };
+  const statusCandidates = [
+    normalizeStatus(req.query.status),
+    normalizeStatus(req.body?.status),
+  ].filter(Boolean);
+  const status =
+    statusCandidates.find(candidate => allowedStatuses.includes(candidate)) ||
+    statusCandidates[0] ||
+    '';
 
   if (!allowedStatuses.includes(status)) {
-    return res.status(400).json({ error: 'Trạng thái đơn hàng không hợp lệ' });
+    return res.status(400).json({
+      error: 'Tr?ng th?i ??n h?ng kh?ng h?p l?',
+      receivedStatus: status ?? null
+    });
   }
 
   try {
@@ -458,6 +524,15 @@ app.post('/api/admin/categories', requireAdmin, async (req, res) => {
   }
 
   try {
+    const normalizedName = normalizeNameKey(name);
+    const existingCategories = await firestore.collection('categories').get();
+    const duplicated = existingCategories.docs.some(doc =>
+      normalizeNameKey(doc.data().name) === normalizedName
+    );
+    if (duplicated) {
+      return res.status(409).json({ error: 'Tên danh mục đã tồn tại' });
+    }
+
     const docRef = await firestore.collection('categories').add({
       name,
       icon: icon || '🍔',
@@ -486,6 +561,16 @@ app.put('/api/admin/categories/:id', requireAdmin, async (req, res) => {
     const doc = await docRef.get();
     if (!doc.exists) {
       return res.status(404).json({ error: 'Category not found' });
+    }
+
+    const normalizedName = normalizeNameKey(name);
+    const existingCategories = await firestore.collection('categories').get();
+    const duplicated = existingCategories.docs.some(categoryDoc =>
+      categoryDoc.id !== id &&
+      normalizeNameKey(categoryDoc.data().name) === normalizedName
+    );
+    if (duplicated) {
+      return res.status(409).json({ error: 'Tên danh mục đã tồn tại' });
     }
 
     await docRef.update({
@@ -545,6 +630,7 @@ app.get('/api/admin/products', requireAdmin, async (req, res) => {
       products = products.filter(product =>
         product.name.toLowerCase().includes(keyword) ||
         product.description.toLowerCase().includes(keyword) ||
+        product.brand.toLowerCase().includes(keyword) ||
         product.id.toLowerCase().includes(keyword)
       );
     }
@@ -559,18 +645,28 @@ app.get('/api/admin/products', requireAdmin, async (req, res) => {
 app.post('/api/admin/products', requireAdmin, async (req, res) => {
   if (!requireFirestore(res)) return;
 
-  const { name, description, price, imageUrl, categoryId, isAvailable } = req.body;
+  const { name, description, price, imageUrl, categoryId, brand, isAvailable } = req.body;
   if (!name || !categoryId) {
     return res.status(400).json({ error: 'Tên sản phẩm và danh mục là bắt buộc' });
   }
 
   try {
+    const normalizedName = normalizeNameKey(name);
+    const existingProducts = await firestore.collection('products').get();
+    const duplicated = existingProducts.docs.some(doc =>
+      normalizeNameKey(doc.data().name) === normalizedName
+    );
+    if (duplicated) {
+      return res.status(409).json({ error: 'Tên sản phẩm đã tồn tại' });
+    }
+
     const docRef = await firestore.collection('products').add({
       name,
       description: description || '',
       price: Number(price || 0),
       imageUrl: imageUrl || '',
       categoryId,
+      brand: brand || '',
       isAvailable: isAvailable !== false,
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp()
@@ -587,7 +683,7 @@ app.put('/api/admin/products/:id', requireAdmin, async (req, res) => {
   if (!requireFirestore(res)) return;
 
   const { id } = req.params;
-  const { name, description, price, imageUrl, categoryId, isAvailable } = req.body;
+  const { name, description, price, imageUrl, categoryId, brand, isAvailable } = req.body;
   if (!name || !categoryId) {
     return res.status(400).json({ error: 'Tên sản phẩm và danh mục là bắt buộc' });
   }
@@ -599,12 +695,23 @@ app.put('/api/admin/products/:id', requireAdmin, async (req, res) => {
       return res.status(404).json({ error: 'Product not found' });
     }
 
+    const normalizedName = normalizeNameKey(name);
+    const existingProducts = await firestore.collection('products').get();
+    const duplicated = existingProducts.docs.some(productDoc =>
+      productDoc.id !== id &&
+      normalizeNameKey(productDoc.data().name) === normalizedName
+    );
+    if (duplicated) {
+      return res.status(409).json({ error: 'Tên sản phẩm đã tồn tại' });
+    }
+
     await docRef.update({
       name,
       description: description || '',
       price: Number(price || 0),
       imageUrl: imageUrl || '',
       categoryId,
+      brand: brand || '',
       isAvailable: isAvailable !== false,
       updatedAt: FieldValue.serverTimestamp()
     });

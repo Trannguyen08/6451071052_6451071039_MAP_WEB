@@ -27,7 +27,7 @@ class UserDataTable extends StatelessWidget {
             if (users.isEmpty) {
               return const Padding(
                 padding: EdgeInsets.all(32),
-                child: Text('Khong tim thay khach hang'),
+                child: Text('Không tìm thấy khách hàng'),
               );
             }
 
@@ -62,42 +62,42 @@ class UserDataTable extends StatelessWidget {
           Expanded(
             flex: 3,
             child: Text(
-              'Khach hang',
+              'Khách hàng',
               style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
             ),
           ),
           Expanded(
             flex: 3,
             child: Text(
-              'Lien he',
+              'Liên hệ',
               style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
             ),
           ),
           Expanded(
             flex: 1,
             child: Text(
-              'Don',
+              'Đơn',
               style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
             ),
           ),
           Expanded(
             flex: 2,
             child: Text(
-              'Tong chi tieu',
+              'Tổng chi tiêu',
               style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
             ),
           ),
           Expanded(
             flex: 2,
             child: Text(
-              'Trang thai',
+              'Trạng thái',
               style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
             ),
           ),
           Expanded(
             flex: 1,
             child: Text(
-              'Tac vu',
+              'Tác vụ',
               style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
             ),
           ),
@@ -165,7 +165,7 @@ class UserDataTable extends StatelessWidget {
               ],
             ),
           ),
-          Expanded(flex: 1, child: Text('${user.ordersCount} don')),
+          Expanded(flex: 1, child: Text('${user.ordersCount} đơn')),
           Expanded(
             flex: 2,
             child: Text(
@@ -199,7 +199,7 @@ class UserDataTable extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      user.status == 'active' ? 'Hoat dong' : 'Bi khoa',
+                      user.status == 'active' ? 'Hoạt động' : 'Bị khóa',
                       style: TextStyle(
                         color: user.status == 'active'
                             ? Colors.green
@@ -228,7 +228,7 @@ class UserDataTable extends StatelessWidget {
   void _showActionMenu(AdminUser user, AdminController controller) {
     Get.dialog(
       AlertDialog(
-        title: Text('Thao tac voi ${user.name}'),
+        title: Text('Thao tác với ${user.name}'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -239,8 +239,8 @@ class UserDataTable extends StatelessWidget {
               ),
               title: Text(
                 user.status == 'active'
-                    ? 'Khoa tai khoan'
-                    : 'Mo khoa tai khoan',
+                    ? 'Khóa tài khoản'
+                    : 'Mở khóa tài khoản',
               ),
               onTap: () {
                 controller.toggleUserStatus(user.id, user.status);
@@ -249,7 +249,7 @@ class UserDataTable extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.edit, color: Colors.blue),
-              title: const Text('Chinh sua thong tin'),
+              title: const Text('Chỉnh sửa thông tin'),
               onTap: () {
                 Get.back();
                 onEdit(user);
@@ -257,7 +257,7 @@ class UserDataTable extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.delete_outline, color: Colors.red),
-              title: const Text('Xoa khach hang'),
+              title: const Text('Xóa khách hàng'),
               onTap: () {
                 Get.back();
                 _confirmDelete(user, controller);
@@ -272,17 +272,17 @@ class UserDataTable extends StatelessWidget {
   void _confirmDelete(AdminUser user, AdminController controller) {
     Get.dialog(
       AlertDialog(
-        title: const Text('Xoa khach hang'),
-        content: Text('Ban co chac muon xoa ${user.name}?'),
+        title: const Text('Xóa khách hàng'),
+        content: Text('Bạn có chắc muốn xóa ${user.name}?'),
         actions: [
-          TextButton(onPressed: Get.back, child: const Text('Huy')),
+          TextButton(onPressed: Get.back, child: const Text('Hủy')),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
               Get.back();
               controller.deleteUser(user.id);
             },
-            child: const Text('Xoa'),
+            child: const Text('Xóa'),
           ),
         ],
       ),
@@ -300,7 +300,7 @@ class UserDataTable extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Hien thi $shown cua $total khach hang',
+              'Hiển thị $shown của $total khách hàng',
               style: const TextStyle(color: Colors.grey),
             ),
             Row(

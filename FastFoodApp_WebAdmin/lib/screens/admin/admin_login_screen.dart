@@ -61,7 +61,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                   ),
                   const SizedBox(height: 16),
                   const Text(
-                    'Admin Login',
+                    'Đăng nhập quản trị',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 28,
@@ -71,7 +71,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Dang nhap de quan ly khach hang FastFood',
+                    'Đăng nhập để quản lý FastFood',
                     textAlign: TextAlign.center,
                     style: TextStyle(color: Colors.grey[600]),
                   ),
@@ -84,7 +84,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                       icon: Icons.email_outlined,
                     ),
                     validator: (value) => value == null || value.trim().isEmpty
-                        ? 'Nhap email admin'
+                        ? 'Nhập email admin'
                         : null,
                   ),
                   const SizedBox(height: 16),
@@ -92,7 +92,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                     controller: _passwordController,
                     obscureText: _obscurePassword,
                     decoration: _inputDecoration(
-                      label: 'Mat khau',
+                      label: 'Mật khẩu',
                       icon: Icons.lock_outline,
                       suffixIcon: IconButton(
                         onPressed: () => setState(
@@ -106,7 +106,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                       ),
                     ),
                     validator: (value) => value == null || value.isEmpty
-                        ? 'Nhap mat khau admin'
+                        ? 'Nhập mật khẩu admin'
                         : null,
                   ),
                   const SizedBox(height: 24),
@@ -134,7 +134,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                                 ),
                               )
                             : const Text(
-                                'Dang nhap',
+                                'Đăng nhập',
                                 style: TextStyle(fontWeight: FontWeight.bold),
                               ),
                       ),
@@ -148,7 +148,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Text(
-                      'Tai khoan mac dinh: admin@fastfood.local / Admin@123456',
+                      'Tài khoản mặc định: admin@fastfood.local / Admin@123456',
                       textAlign: TextAlign.center,
                       style: TextStyle(color: Color(0xFF9A3412), fontSize: 12),
                     ),

@@ -19,9 +19,6 @@ class AdminController extends GetxController {
     super.onInit();
     isAuthenticated.value = _adminService.isLoggedIn;
     adminName.value = _adminService.adminName;
-    if (isAuthenticated.value) {
-      fetchUsers();
-    }
   }
 
   Future<void> login(String email, String password) async {
@@ -30,9 +27,9 @@ class AdminController extends GetxController {
       final session = await _adminService.login(email.trim(), password);
       isAuthenticated.value = true;
       adminName.value = session.name;
-      Get.offAllNamed(AppRoutes.adminUsers);
+      Get.offAllNamed(AppRoutes.adminDashboard);
     } catch (e) {
-      Get.snackbar('Loi dang nhap', e.toString());
+      Get.snackbar('Lỗi đăng nhập', e.toString());
     } finally {
       isLoading.value = false;
     }
@@ -61,7 +58,7 @@ class AdminController extends GetxController {
         Get.offAllNamed(AppRoutes.adminLogin);
         return;
       }
-      Get.snackbar('Error', e.toString());
+      Get.snackbar('Lỗi', e.toString());
     } finally {
       isLoading.value = false;
     }
@@ -94,7 +91,7 @@ class AdminController extends GetxController {
         Get.back();
       }
     } catch (e) {
-      Get.snackbar('Error', e.toString());
+      Get.snackbar('Lỗi', e.toString());
     } finally {
       isSaving.value = false;
     }
@@ -108,7 +105,7 @@ class AdminController extends GetxController {
         await fetchUsers();
       }
     } catch (e) {
-      Get.snackbar('Error', e.toString());
+      Get.snackbar('Lỗi', e.toString());
     } finally {
       isSaving.value = false;
     }
@@ -122,7 +119,7 @@ class AdminController extends GetxController {
         fetchUsers();
       }
     } catch (e) {
-      Get.snackbar('Error', e.toString());
+      Get.snackbar('Lỗi', e.toString());
     }
   }
 
